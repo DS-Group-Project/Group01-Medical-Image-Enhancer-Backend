@@ -1,0 +1,10 @@
+Ignore Environment Variables for security
+
+.env
+
+Ignore Python Cache
+
+pycache/
+*.pyc
+
+Ignore Node Modules (For API and Frontend)

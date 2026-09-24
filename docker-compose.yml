@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # 1. React Frontend Service
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # URL to communicate with the Node API (Will be updated to EC2 IP during deployment)
+      - REACT_APP_API_URL=http://localhost:5000
+    depends_on:
+      - api
+
+  # 2. Node.js API Service
+  api:
+    build: ./api
+    ports:
+      - "5000:5000"
+    environment:
+      # AWS Credentials for S3, SQS, and DynamoDB access
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=us-east-1
+      - SQS_QUEUE_URL=YOUR_SQS_QUEUE_URL_HERE
+
+  # 3. Python OpenCV Worker Service
+  worker:
+    build: ./worker
+    environment:
+      # AWS Credentials for S3, SQS, and DynamoDB access
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=us-east-1
+      - SQS_QUEUE_URL=YOUR_SQS_QUEUE_URL_HERE
