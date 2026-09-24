@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Medical Image Enhancer - Advanced medical imaging enhancement tool" />
+
+    <!--
+      Content-Security-Policy as a meta tag. This is a best-effort baseline
+      that works with zero server config, but a <meta> CSP CANNOT set
+      frame-ancestors or report-uri/report-to, and browsers ignore
+      frame-ancestors here by spec — clickjacking protection (frame-ancestors
+      / X-Frame-Options) and other response-header-only protections
+      (X-Content-Type-Options, Strict-Transport-Security, Referrer-Policy)
+      MUST also be set as real HTTP response headers by whatever serves this
+      build (see SECURITY.md for ready-to-use Nginx/Vercel/Netlify config).
+      connect-src includes the API origin so axios calls aren't blocked;
+      update it if VITE_API_BASE_URL changes.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self';
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: blob:;
+      connect-src 'self' http://localhost:5000;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+    " />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Medical Image Enhancer</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

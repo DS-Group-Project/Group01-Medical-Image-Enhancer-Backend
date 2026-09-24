@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-text-primary font-sans antialiased;
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
+  }
+  
+  .glassmorphism {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+  
+  .glass-card {
+    @apply bg-surface/80 backdrop-blur-md border border-slate-200 shadow-colored rounded-2xl;
+  }
+
+  .animated-gradient-bg {
+    background: linear-gradient(-45deg, #0D9488, #6366F1, #14B8A6, #818CF8);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+  }
+
+  .dropzone-pulse {
+    @apply border-2 border-dashed border-primary/50 relative overflow-hidden;
+  }
+  
+  .dropzone-pulse::before {
+    content: '';
+    @apply absolute inset-0 bg-primary/5 scale-90 opacity-0 transition-all duration-500 rounded-xl;
+  }
+  
+  .dropzone-pulse:hover::before {
+    @apply scale-100 opacity-100;
+  }
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary-300 rounded-full transition-colors duration-200;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary-500;
+}
+
+/* Smooth transitions */
+* {
+  @apply transition-colors duration-200 ease-in-out;
+}

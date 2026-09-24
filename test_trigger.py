@@ -1,64 +1,57 @@
-import boto3
+import os
 import json
 import uuid
+import boto3
+from dotenv import load_dotenv
 
-# === AWS Configuration ===
-# Using the credentials provided by the Project Lead
-aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
-REGION = 'us-east-1'
+# Load environment variables from the .env file
+load_dotenv()
 
-# Replace this with the actual SQS Queue URL you copied from the AWS Console
-SQS_QUEUE_URL='https://sqs.us-east-1.amazonaws.com/240037737007/ImageProcessingQueue'
-RAW_BUCKET = 'medicalimagesds'
-PROCESSED_BUCKET = 'processedmedicalimage'
-# Initialize AWS Clients for S3 and SQS
+# Set up variables from environment
+aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+aws_region = os.environ.get('AWS_DEFAULT_REGION', 'us-east-1')
+
+RAW_BUCKET = os.environ.get('RAW_BUCKET_NAME')
+QUEUE_URL = os.environ.get('SQS_QUEUE_URL')
+
+# Initialize AWS Clients
 s3_client = boto3.client(
     's3',
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    region_name=REGION
+    aws_access_key_id=aws_access_key,
+    aws_secret_access_key=aws_secret_key,
+    region_name=aws_region
 )
+
 sqs_client = boto3.client(
     'sqs',
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    region_name=REGION
+    aws_access_key_id=aws_access_key,
+    aws_secret_access_key=aws_secret_key,
+    region_name=aws_region
 )
 
-def test_workflow():
-    # 1. Define the local image path to be tested
-    # Make sure you have an image named 'sample.jpg' in the same directory
-    local_image_path = "sample.jpg"  
+def trigger_test():
+    # Generate a unique Job ID and image file name
+    job_id = str(uuid.uuid4())
+    image_key = f"xray_{job_id}.jpg"
     
-    # 2. Generate a unique Task ID and define the S3 object key
-    task_id = str(uuid.uuid4())
-    image_key = f"xray_{task_id}.jpg"
-
-    print(f"Step 1: Uploading {local_image_path} to S3 bucket ({RAW_BUCKET})...")
-    try:
-        s3_client.upload_file(local_image_path, RAW_BUCKET, image_key)
-        print("S3 Upload successful!")
-    except Exception as e:
-        print(f"S3 Upload failed: {e}")
-        return
-
-    print("Step 2: Sending message to SQS queue...")
-    # Create the message payload matching the format expected by the worker
+    # 1. Upload sample.jpg to the S3 bucket
+    print(f"Uploading sample.jpg to {RAW_BUCKET} as {image_key}...")
+    s3_client.upload_file("sample.jpg", RAW_BUCKET, image_key)
+    
+    # 2. Create the SQS message payload matching the Node.js API format
     message_body = {
-        "taskId": task_id,
-        "imageKey": image_key
+        "jobId": job_id,
+        "originalKey": image_key
     }
     
-    try:
-        sqs_client.send_message(
-            QueueUrl=SQS_QUEUE_URL,
-            MessageBody=json.dumps(message_body)
-        )
-        print(f"Success! Task {task_id} sent to SQS.")
-        print("Please check the terminal where your Worker is running to see the processing logs!")
-    except Exception as e:
-        print(f"SQS Message failed: {e}")
+    # 3. Send the message to the SQS queue
+    print("Sending message to SQS queue...")
+    sqs_client.send_message(
+        QueueUrl=QUEUE_URL,
+        MessageBody=json.dumps(message_body)
+    )
+    print(f"Trigger successful! Job ID: {job_id}")
 
 if __name__ == "__main__":
-    test_workflow()
+    trigger_test()
