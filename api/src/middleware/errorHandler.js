@@ -1,5 +1,12 @@
+import logger from "../utils/logger.js";
+
 export function errorHandler(err, req, res, next) {
-  console.error(err);
+  logger.error({ err, path: req.path }, "Unhandled error");
+
+  // CSRF validation failure
+  if (err.code === "EBADCSRFTOKEN") {
+    return res.status(403).json({ error: "INVALID_CSRF_TOKEN" });
+  }
 
   // Known business errors from repositories
   if (err.message === "EMAIL_ALREADY_EXISTS") {

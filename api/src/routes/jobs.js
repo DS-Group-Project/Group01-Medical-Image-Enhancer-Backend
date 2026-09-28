@@ -6,8 +6,9 @@ import {
   markProcessing,
   markCompleted,
   markFailed,
-} from "../../../db/src/jobsRepository.js";
-import { requireAuth, requireSelfOrAdmin } from "../middleware/auth.js";
+} from "../../../database/src/jobsRepository.js";
+import { requireAuth, requireSelfOrAdmin, requireRole } from "../middleware/auth.js";
+import logger from "../utils/logger.js";
 
 const router = Router();
 
@@ -41,10 +42,21 @@ router.get("/:jobId", requireAuth, async (req, res, next) => {
 
     // Only owner or admin can see the job
     if (req.user.role !== "admin" && job.userId !== req.user.userId) {
+      logger.warn({ action: "audit_access_denied", jobId: job.jobId, userId: req.user.userId }, "Unauthorized job access attempt");
       return res.status(403).json({ error: "FORBIDDEN" });
     }
 
-    res.json(job);
+    logger.info({ action: "audit_view_job", jobId: job.jobId, userId: req.user.userId }, "User viewed job details");
+
+    res.json({
+      id: job.jobId,
+      jobId: job.jobId,
+      filename: job.filename,
+      status: job.status,
+      createdAt: job.createdAt,
+      completedAt: job.completedAt,
+      progress: job.progress,
+    });
   } catch (err) {
     next(err);
   }
@@ -66,9 +78,8 @@ export async function listUserJobs(req, res, next) {
 }
 
 /** PATCH /jobs/:jobId/processing  – typically called by a worker */
-router.patch("/:jobId/processing", requireAuth, async (req, res, next) => {
+router.patch("/:jobId/processing", requireAuth, requireRole(["worker", "admin"]), async (req, res, next) => {
   try {
-    // Optional: restrict to admin/worker role later
     await markProcessing(req.params.jobId);
     const job = await getJob(req.params.jobId);
     res.json(job);
@@ -78,7 +89,7 @@ router.patch("/:jobId/processing", requireAuth, async (req, res, next) => {
 });
 
 /** PATCH /jobs/:jobId/completed */
-router.patch("/:jobId/completed", requireAuth, async (req, res, next) => {
+router.patch("/:jobId/completed", requireAuth, requireRole(["worker", "admin"]), async (req, res, next) => {
   try {
     const { enhancedKey } = req.body;
     if (!enhancedKey) {
@@ -94,7 +105,7 @@ router.patch("/:jobId/completed", requireAuth, async (req, res, next) => {
 });
 
 /** PATCH /jobs/:jobId/failed */
-router.patch("/:jobId/failed", requireAuth, async (req, res, next) => {
+router.patch("/:jobId/failed", requireAuth, requireRole(["worker", "admin"]), async (req, res, next) => {
   try {
     const { error } = req.body;
     if (!error) {

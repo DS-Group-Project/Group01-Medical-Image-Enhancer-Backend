@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getUserById } from "../../../db/src/usersRepository.js";
+import { getUserById } from "../../../database/src/usersRepository.js";
 import { requireAuth, requireSelfOrAdmin } from "../middleware/auth.js";
 
 const router = Router();

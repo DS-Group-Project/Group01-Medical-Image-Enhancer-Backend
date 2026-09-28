@@ -1,0 +1,60 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "DynamoDBJobsTableAccess",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:Query"
+            ],
+            "Resource": [
+                "arn:aws:dynamodb:*:*:table/Jobs",
+                "arn:aws:dynamodb:*:*:table/Jobs/index/*"
+            ]
+        },
+        {
+            "Sid": "DynamoDBUsersTableAccess",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:GetItem",
+                "dynamodb:Query"
+            ],
+            "Resource": [
+                "arn:aws:dynamodb:*:*:table/Users",
+                "arn:aws:dynamodb:*:*:table/Users/index/*"
+            ]
+        },
+        {
+            "Sid": "S3RawBucketAccess",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": "arn:aws:s3:::${RAW_BUCKET_NAME}/*"
+        },
+        {
+            "Sid": "S3ProcessedBucketAccess",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": "arn:aws:s3:::${PROCESSED_BUCKET_NAME}/*"
+        },
+        {
+            "Sid": "SQSSendMessageAccess",
+            "Effect": "Allow",
+            "Action": [
+                "sqs:SendMessage"
+            ],
+            "Resource": "arn:aws:sqs:*:*:${SQS_QUEUE_NAME}"
+        }
+    ]
+}

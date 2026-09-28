@@ -1,0 +1,26 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files for both the API and the Database module
+COPY api/package*.json ./api/
+COPY database/package*.json ./database/
+
+# Install dependencies for both (Database is referenced by API)
+RUN cd api && npm ci
+RUN cd database && npm ci
+
+# Copy the source code for both modules
+COPY api ./api
+COPY database ./database
+
+# Set the working directory to the API folder
+WORKDIR /app/api
+
+RUN chown -R node:node /app
+
+# Switch to the non-root 'node' user automatically created by the node image
+USER node
+
+# Start the API service
+CMD ["npm", "start"]

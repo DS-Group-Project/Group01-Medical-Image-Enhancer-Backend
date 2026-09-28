@@ -1,0 +1,40 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "DynamoDBJobsTableUpdate",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:UpdateItem"
+            ],
+            "Resource": "arn:aws:dynamodb:*:*:table/Jobs"
+        },
+        {
+            "Sid": "S3RawBucketRead",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": "arn:aws:s3:::${RAW_BUCKET_NAME}/*"
+        },
+        {
+            "Sid": "S3ProcessedBucketWrite",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject"
+            ],
+            "Resource": "arn:aws:s3:::${PROCESSED_BUCKET_NAME}/*"
+        },
+        {
+            "Sid": "SQSWorkerAccess",
+            "Effect": "Allow",
+            "Action": [
+                "sqs:ReceiveMessage",
+                "sqs:DeleteMessage",
+                "sqs:ChangeMessageVisibility",
+                "sqs:GetQueueAttributes"
+            ],
+            "Resource": "arn:aws:sqs:*:*:${SQS_QUEUE_NAME}"
+        }
+    ]
+}

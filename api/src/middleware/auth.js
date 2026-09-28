@@ -1,6 +1,9 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is missing.");
+}
 
 /** Sign a JWT for a user */
 export function signToken(user) {
@@ -20,13 +23,15 @@ export function signToken(user) {
  * Attaches `req.user = { userId, email, role }`
  */
 export function requireAuth(req, res, next) {
+  // Allow both cookie and Authorization header (for backward compatibility / worker scripts)
   const header = req.headers.authorization;
+  const cookieToken = req.cookies?.token;
 
-  if (!header || !header.startsWith("Bearer ")) {
+  const token = cookieToken || (header && header.startsWith("Bearer ") ? header.slice(7) : null);
+
+  if (!token) {
     return res.status(401).json({ error: "MISSING_TOKEN" });
   }
-
-  const token = header.slice(7);
 
   try {
     const payload = jwt.verify(token, JWT_SECRET);
@@ -52,5 +57,18 @@ export function requireSelfOrAdmin(paramName = "userId") {
       return next();
     }
     return res.status(403).json({ error: "FORBIDDEN" });
+  };
+}
+
+/**
+ * Middleware: only allow specific roles
+ * Usage: requireRole(["admin", "worker"])
+ */
+export function requireRole(allowedRoles) {
+  return (req, res, next) => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: "FORBIDDEN" });
+    }
+    next();
   };
 }

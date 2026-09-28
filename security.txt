@@ -1,0 +1,4 @@
+Contact: security@medical-image-enhancer.internal
+Expires: 2030-01-01T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://medical-image-enhancer.internal/.well-known/security.txt

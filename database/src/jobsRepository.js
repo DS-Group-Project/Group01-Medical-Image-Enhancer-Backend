@@ -1,4 +1,4 @@
-import { PutCommand, GetCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, GetCommand, QueryCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, JOBS_TABLE } from "./dynamoClient.js";
 import { randomUUID } from "crypto";
 
@@ -35,6 +35,8 @@ export async function getJob(jobId) {
 
 /** List a user's jobs, newest first, paginated, optional status filter. */
 export async function listJobsForUser(userId, { limit = 10, cursor, status } = {}) {
+  const clampedLimit = Math.max(1, Math.min(100, Number(limit) || 10));
+
   const res = await ddb.send(new QueryCommand({
     TableName: JOBS_TABLE,
     IndexName: "UserJobsIndex",
@@ -45,7 +47,7 @@ export async function listJobsForUser(userId, { limit = 10, cursor, status } = {
     },
     ...(status && { FilterExpression: "#st = :s", ExpressionAttributeNames: { "#st": "status" } }),
     ScanIndexForward: false,
-    Limit: limit,
+    Limit: clampedLimit,
     ExclusiveStartKey: cursor ? JSON.parse(Buffer.from(cursor, "base64").toString()) : undefined,
   }));
 
@@ -96,4 +98,9 @@ export async function markFailed(jobId, errorMessage) {
     ExpressionAttributeNames: { "#st": "status", "#err": "error" },
     ExpressionAttributeValues: { ":failed": "failed", ":err": errorMessage, ":now": now },
   }));
+}
+
+/** Hard delete a job */
+export async function deleteJobRecord(jobId) {
+  return ddb.send(new DeleteCommand({ TableName: JOBS_TABLE, Key: { jobId } }));
 }
